@@ -48,6 +48,8 @@ and console output (pressed # 123):
 
 recieved codewods for this RC:
 
-![RC Code](https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/IR_ConsoleOutput.jpg)
+![RC Code](https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/RemoteControl.jpg)
+
+VS
 
 
