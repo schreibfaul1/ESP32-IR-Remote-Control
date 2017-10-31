@@ -5,7 +5,7 @@ C++ class for the infrared remote control and reciever module
 
 Examplecode:
 
-````
+```` c++
 #include "Arduino.h"
 #include "IR.h"
 
