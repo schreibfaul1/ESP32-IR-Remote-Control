@@ -42,8 +42,12 @@ void ir_key(const char* key){
     Serial.println(key);
 }
 ````
-and console output:
+and console output (pressed # 123):
 
 ![Serial Console Output](https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/IR_ConsoleOutput.jpg)
+
+recieved codewods for this RC:
+
+![RC Code](https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/IR_ConsoleOutput.jpg)
 
 
