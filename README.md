@@ -50,6 +50,6 @@ recieved codewods for this RC:
 
 ![RC Code](https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/RemoteControl.jpg)
 
-VS
+VS1838 pins;
 
-
+![VS1838B Pins] (https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/VS1838B%20Pins.jpg)
