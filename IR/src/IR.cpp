@@ -113,6 +113,7 @@ void IRAM_ATTR isr_IR()
         ir_loccount++;                           // Count number of received bits
     }
     else if(ir_loccount == 65){                  // Value is correct after 65 level changes
+        t0=0;
         while(mask_in){                          // Convert 32 bits to 16 bits
             if(ir_locvalue & mask_in) {          // Bit set in pattern?
                 ir_value|=mask_out;              // Set set bit in result
@@ -143,9 +144,12 @@ void IRAM_ATTR isr_IR()
         }
         if(ir_resp>(-1))ir.setIRresult(ir_resp);
     }
+    else if((intval>4000)&&(intval<5000)) {
+        ir_loccount=0;          // Reset decoding
+        ir_locvalue=0;}
     else
     {
-        ir_locvalue=0;                           // Reset decoding
-        ir_loccount=0;
+//        ir_locvalue=0;
+//        ir_loccount=0;
     }
 }
