@@ -25,7 +25,6 @@ class IR {
         uint32_t ir_num=0;
         uint8_t  ir_pin;
         uint8_t  ir_result;
-        int8_t   ir_resp;
         uint8_t  idx=0;
         char     ir_resultstr[10];
         uint16_t downcount=0;

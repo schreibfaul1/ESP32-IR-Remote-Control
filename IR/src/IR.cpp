@@ -6,7 +6,8 @@
  */
 #include "IR.h"
 
-
+// global var
+DRAM_ATTR int8_t ir_resp; // set from isr
 
 IR::IR(uint8_t IR_PIN){
     ir_pin=IR_PIN;
@@ -24,7 +25,7 @@ void IR::begin(){
     pinMode(ir_pin, INPUT);
     attachInterrupt(ir_pin, isr_IR, CHANGE); // Interrupts will be handle by isr_IR
 }
-void IR::setIRresult(uint8_t result){
+void IRAM_ATTR IR::setIRresult(uint8_t result){
     ir_resp=result;
 }
 void IR::loop(){
@@ -87,7 +88,7 @@ void IR::loop(){
 // Interrupts received from VS1838B on every change of the signal.                                 *
 // Intervals are 640 or 1640 microseconds for data.  syncpulses are 3400 micros or longer.         *
 // Input is complete after 65 level changes.                                                       *
-// Only the last 32 level changes are significant and will be handed over to common data.          *
+// Only the last 32 level changes are significant.                                                 *
 //**************************************************************************************************
 void IRAM_ATTR isr_IR()
 {
@@ -107,7 +108,7 @@ void IRAM_ATTR isr_IR()
         ir_locvalue=ir_locvalue << 1;            // Shift in a "zero" bit
         ir_loccount++;                           // Count number of received bits
     }
-    else if((intval > 1600) && (intval < 1700)){ // Long pulse?
+    else if((intval > 1500) && (intval < 1700)){ // Long pulse?
 
         ir_locvalue=(ir_locvalue << 1) + 1;      // Shift in a "one" bit
         ir_loccount++;                           // Count number of received bits
@@ -146,10 +147,10 @@ void IRAM_ATTR isr_IR()
     }
     else if((intval>4000)&&(intval<5000)) {
         ir_loccount=0;          // Reset decoding
-        ir_locvalue=0;}
+        ir_locvalue=0;
+    }
     else
     {
-//        ir_locvalue=0;
-//        ir_loccount=0;
+        // do nothing
     }
 }
