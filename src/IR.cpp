@@ -3,6 +3,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
+ *  Updated on: 08.04.2022
  */
 #include "IR.h"
 
@@ -109,7 +110,7 @@ void IRAM_ATTR isr_IR()
     intval=t1 - t0;                             // Compute interval
     t0=t1;                                      // Save for next compare
 
-    if((intval>4000)&&(intval<5000)) {          // begin sequence of code?
+    if((intval >= 3500)&&(intval <= 5500)) {          // begin sequence of code?
         pulsecounter=0;                         // Reset counter
         ir_value=0;
         levelcounter=0;
@@ -147,15 +148,37 @@ void IRAM_ATTR isr_IR()
                 case 17085: ir_resp=16; break; //STAR   0x42BD
                 default: ir_resp=(-1);
             }
+
+            // switch(command){  // alternative key assignment
+            //     case 39015: ir_resp=0;  break; //ZERO   0x9867
+            //     case 41565: ir_resp=1;  break; //ONE    0xA25D
+            //     case 25245: ir_resp=2;  break; //TWO    0x629D
+            //     case 57885: ir_resp=3;  break; //THREE  0xE21D
+            //     case 8925:  ir_resp=4;  break; //FOUR   0x22DD
+            //     case 765:   ir_resp=5;  break; //FIVE   0x02FD
+            //     case 49725: ir_resp=6;  break; //SIX    0xC23D
+            //     case 57375: ir_resp=7;  break; //SEVEN  0xE01F
+            //     case 43095: ir_resp=8;  break; //EIGHT  0xA857
+            //     case 36975: ir_resp=9;  break; //NINE   0x906F
+            //     case 14535: ir_resp=10; break; //OK     0x38C7
+            //     case 6375:  ir_resp=11; break; //UP     0x18E7
+            //     case 19125: ir_resp=12; break; //DOWN   0x4AB5
+            //     case 23205: ir_resp=13; break; //RIGHT  0x5AA5
+            //     case 4335:  ir_resp=14; break; //LEFT   0x10EF
+            //     case 45135: ir_resp=15; break; //HASH   0xB04F
+            //     case 26775: ir_resp=16; break; //STAR   0x6897
+            //     default: ir_resp=(-1);
+            // }
+
             if(ir_resp>(-1))ir.setIRresult(ir_resp);
         }
     }
 
-    if((intval > 500) && (intval < 700)){       // Short pulse?
+    if((intval > 400) && (intval < 750)){       // Short pulse?
         ir_value=(ir_value << 1) + 0;           // Shift in a "zero" bit
         pulsecounter++;                         // Count number of received bits
     }
-    if((intval > 1500) && (intval < 1700)){     // Long pulse?
+    if((intval > 1400) && (intval < 1900)){     // Long pulse?
 
         ir_value=(ir_value << 1) + 1;           // Shift in a "one" bit
         pulsecounter++;                         // Count number of received bits
