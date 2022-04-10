@@ -3,7 +3,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 08.04.2022
+ *  Updated on: 10.04.2022
  */
 #include "IR.h"
 
@@ -32,53 +32,55 @@ void IRAM_ATTR IR::setIRresult(uint8_t result){
 void IR::loop(){
 // transform raw data from IR to ir_result
 
-    if(f_entry == false){t0=millis(); f_entry=true;}
-    if((t0 + 49 > millis())&&(t0<=millis())) return;   // wait 50ms (not if millis overflow)
-    f_entry=false;
+    if(f_entry == false){t0 = millis(); f_entry = true;}
+    if((t0 + 49 > millis()) && (t0 <= millis())) return;   // wait 50ms (not if millis overflow)
+    f_entry = false;
     // entry every 50ms in this routine
     if(downcount) downcount--;                             // 1.5 sec countdown
     else{
         if(f_send){
             if(ir_res) ir_res(ir_num);
             //log_i("ir_res %i", ir_num);
-            idx=0;
-            ir_num=0;
-            f_send=false;
+            idx = 0;
+            ir_num = 0;
+            f_send  =false;
         }
     }
 
     if(tmp_resp == ir_resp) return;   // new value from IR?
-    tmp_resp=ir_resp;
-    ir_resp=(-1);                     // yes, set ir_resp to default
+    tmp_resp = ir_resp;
+    ir_resp = (-1);                     // yes, set ir_resp to default
 
     if(tmp_resp >= 10){               // it is a function key in ir_result
         switch(tmp_resp){
-        case 10: ir_resultstr[0]='k'; break;
-        case 11: ir_resultstr[0]='u'; break;
-        case 12: ir_resultstr[0]='d'; break;
-        case 13: ir_resultstr[0]='r'; break;
-        case 14: ir_resultstr[0]='l'; break;
-        case 15: ir_resultstr[0]='#'; break;
-        case 16: ir_resultstr[0]='*'; break;
+        case 10: ir_resultstr[0] = 'k'; break;
+        case 11: ir_resultstr[0] = 'u'; break;
+        case 12: ir_resultstr[0] = 'd'; break;
+        case 13: ir_resultstr[0] = 'r'; break;
+        case 14: ir_resultstr[0] = 'l'; break;
+        case 15: ir_resultstr[0] = '#'; break;
+        case 16: ir_resultstr[0] = '*'; break;
         }
-        ir_resultstr[1]=0;
+        ir_resultstr[1] = 0;
         if(ir_key) ir_key(ir_resultstr);
         //log_i("ir_key %s", ir_resultstr);
-        downcount=0;
-        ir_num=0;
+        downcount = 0;
+        ir_num = 0;
         f_send=false;
+        tmp_resp = -1;
         return;
     }
-    if(tmp_resp > ( -1)){   // it is a number key in ir_result, can be 0...9
+    if(tmp_resp > (-1)){   // it is a number key in ir_result, can be 0...9
         if(idx < 3){
-            ir_resultstr[idx]=tmp_resp + 48;   // convert in ASCII
+            ir_resultstr[idx] = tmp_resp + 48;  // convert in ASCII
             idx++;
-            ir_resultstr[idx]=0;             // terminate
+            ir_resultstr[idx] = 0;              // terminate
             if(ir_number) ir_number(ir_resultstr);
             //log_i("ir_number %s", ir_resultstr);
-            ir_num=ir_num * 10 + tmp_resp;
-            f_send=true;
-            downcount=30;          // await nex tmp_resp
+            ir_num = ir_num * 10 + tmp_resp;
+            f_send = true;
+            downcount = 30;                     // await nex tmp_resp
+            tmp_resp = -1;
         }
     }
 }
