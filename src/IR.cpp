@@ -3,7 +3,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 10.04.2022
+ *  Updated on: 04.74.2022
  */
 #include "IR.h"
 
@@ -23,8 +23,10 @@ IR::~IR(){
 }
 
 void IR::begin(){
-    pinMode(ir_pin, INPUT);
-    attachInterrupt(ir_pin, isr_IR, CHANGE); // Interrupts will be handle by isr_IR
+    if(ir_pin >= 0){
+        pinMode(ir_pin, INPUT);
+        attachInterrupt(ir_pin, isr_IR, CHANGE); // Interrupts will be handle by isr_IR
+    }
 }
 void IRAM_ATTR IR::setIRresult(uint8_t result){
     ir_resp=result;

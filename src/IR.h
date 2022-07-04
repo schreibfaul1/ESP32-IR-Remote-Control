@@ -23,7 +23,7 @@ class IR {
         boolean  f_send=false;   // entryflag
         uint32_t t0;
         uint32_t ir_num=0;
-        uint8_t  ir_pin;
+        int8_t   ir_pin;
         uint8_t  ir_result;
         uint8_t  idx=0;
         char     ir_resultstr[10];
