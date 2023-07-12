@@ -8,14 +8,34 @@
 #include "IR.h"
 
 // global var
-DRAM_ATTR int8_t ir_resp; // set from isr
+DRAM_ATTR uint8_t ir_resp; // set from isr
 
 IR::IR(uint8_t IR_PIN){
     ir_pin=IR_PIN;
     ir_result=0;
-    ir_resp=(-1);
+    ir_resp = 0xFF;
     t0=0;
-    //log_i("init");
+
+    ir_buttons[ 0].val = 0x52; ir_buttons[ 0].ch = '0';
+    ir_buttons[ 1].val = 0x16; ir_buttons[ 1].ch = '1';
+    ir_buttons[ 2].val = 0x19; ir_buttons[ 2].ch = '2';
+    ir_buttons[ 3].val = 0x0D; ir_buttons[ 3].ch = '3';
+    ir_buttons[ 4].val = 0x0C; ir_buttons[ 4].ch = '4';
+    ir_buttons[ 5].val = 0x18; ir_buttons[ 5].ch = '5';
+    ir_buttons[ 6].val = 0x5E; ir_buttons[ 6].ch = '6';
+    ir_buttons[ 7].val = 0x08; ir_buttons[ 7].ch = '7';
+    ir_buttons[ 8].val = 0x1C; ir_buttons[ 8].ch = '8';
+    ir_buttons[ 9].val = 0x5A; ir_buttons[ 9].ch = '9';
+    ir_buttons[10].val = 0x40; ir_buttons[10].ch = 'o';  // OK
+    ir_buttons[11].val = 0x46; ir_buttons[11].ch = 'u';  // UP
+    ir_buttons[12].val = 0x15; ir_buttons[12].ch = 'd';  // DOWN
+    ir_buttons[13].val = 0x43; ir_buttons[13].ch = 'r';  // RIGHT
+    ir_buttons[14].val = 0x44; ir_buttons[14].ch = 'l';  // LEFT
+    ir_buttons[15].val = 0x4A; ir_buttons[15].ch = '#';  // #
+    ir_buttons[16].val = 0x42; ir_buttons[16].ch = '*';  // *
+    ir_buttons[17].val = 0x00; ir_buttons[17].ch = '0';
+    ir_buttons[18].val = 0x00; ir_buttons[18].ch = '0';
+    ir_buttons[19].val = 0x00; ir_buttons[19].ch = '0';
 }
 
 IR::~IR(){
@@ -24,66 +44,54 @@ IR::~IR(){
 
 void IR::begin(){
     if(ir_pin >= 0){
-        pinMode(ir_pin, INPUT);
+        pinMode(ir_pin, INPUT_PULLUP);
         attachInterrupt(ir_pin, isr_IR, CHANGE); // Interrupts will be handle by isr_IR
     }
 }
-void IRAM_ATTR IR::setIRresult(uint8_t result){
-    ir_resp=result;
+void IR::defineButtons(irBtn_t* b){
+    uint8_t b_len = sizeof(b);
+    for (int i = 0; i < b_len; i++){
+        log_i("%d %c", b[i].val, b[i].ch);
+    }
 }
-void IR::loop(){
-// transform raw data from IR to ir_result
 
-    if(f_entry == false){t0 = millis(); f_entry = true;}
-    if((t0 + 49 > millis()) && (t0 <= millis())) return;   // wait 50ms (not if millis overflow)
-    f_entry = false;
-    // entry every 50ms in this routine
-    if(downcount) downcount--;                             // 1.5 sec countdown
-    else{
-        if(f_send){
-            if(ir_res) ir_res(ir_num);
-            //log_i("ir_res %i", ir_num);
-            idx = 0;
-            ir_num = 0;
-            f_send  =false;
+void IRAM_ATTR IR::setIRresult(uint8_t result){
+    ir_resp = result;
+}
+
+void IR::loop(){ // transform raw data from IR to ir_result
+    static uint16_t number = 0;
+    static uint8_t idx = 0;
+
+    if(ir_resp != 0xFF){
+        t0 = millis();
+        for(uint i = 0; i < 256; i++){
+            if(ir_resp == ir_buttons[i].val){
+                uint8_t ch = ir_buttons[i].ch;
+                if(ch >= '0' && ch <= '9'){
+                    if(idx > 2) break;
+                    uint8_t digit = ch - 48;
+                    number *= 10;
+                    number += digit;
+                    char buf[5]; itoa(number, buf, 10);
+                    if(ir_number) ir_number(buf);
+                    idx++;
+                }
+                else{ // is not a number
+                    ir_resultstr[0] = (uint8_t)ch;
+                    ir_resultstr[1] = '\0';
+                    if(ir_key) ir_key(ir_resultstr);
+                    idx = 0;
+                }
+                break;
+            }
         }
+        ir_resp = 0xFF;
     }
-
-    if(tmp_resp == ir_resp) return;   // new value from IR?
-    tmp_resp = ir_resp;
-    ir_resp = (-1);                     // yes, set ir_resp to default
-
-    if(tmp_resp >= 10){               // it is a function key in ir_result
-        switch(tmp_resp){
-        case 10: ir_resultstr[0] = 'k'; break;
-        case 11: ir_resultstr[0] = 'u'; break;
-        case 12: ir_resultstr[0] = 'd'; break;
-        case 13: ir_resultstr[0] = 'r'; break;
-        case 14: ir_resultstr[0] = 'l'; break;
-        case 15: ir_resultstr[0] = '#'; break;
-        case 16: ir_resultstr[0] = '*'; break;
-        }
-        ir_resultstr[1] = 0;
-        if(ir_key) ir_key(ir_resultstr);
-        //log_i("ir_key %s", ir_resultstr);
-        downcount = 0;
-        ir_num = 0;
-        f_send=false;
-        tmp_resp = -1;
-        return;
-    }
-    if(tmp_resp > (-1)){   // it is a number key in ir_result, can be 0...9
-        if(idx < 3){
-            ir_resultstr[idx] = tmp_resp + 48;  // convert in ASCII
-            idx++;
-            ir_resultstr[idx] = 0;              // terminate
-            if(ir_number) ir_number(ir_resultstr);
-            //log_i("ir_number %s", ir_resultstr);
-            ir_num = ir_num * 10 + tmp_resp;
-            f_send = true;
-            downcount = 30;                     // await nex tmp_resp
-            tmp_resp = -1;
-        }
+    if(idx && (t0 + 2000 < millis())){
+        idx = 0;
+        if(ir_res) ir_res(number);
+        number = 0;
     }
 }
 
@@ -99,26 +107,27 @@ void IRAM_ATTR isr_IR()
 {
     extern IR ir;
 
-    int8_t          ir_resp=(-1);
-    uint16_t        address=0;                 // The first 4 bytes of IR code
-    uint16_t        command=0;                 // The last 4 bytes of IR code
-    uint32_t        t1, intval;                // Current time and interval since last change
+    uint16_t        address=0;                  // The first 4 bytes of IR code
+    uint16_t        command=0;                  // The last 4 bytes of IR code
+    int32_t         t1=0, intval=0;             // Current time and interval since last change
 
     static uint8_t  levelcounter=0;             // Counts the level changes
     static uint8_t  pulsecounter=0;             // Counts the pulse
     static uint32_t t0=0;                       // To get the interval
     static uint32_t ir_value=0;                 // IR code
     static boolean  ir_begin=false;             // set if HIGH/LOW change
+    static uint64_t bit = 0x00000001;
 
     t1=micros();                                // Get current time
     intval=t1 - t0;                             // Compute interval
     t0=t1;                                      // Save for next compare
 
-    if((intval >= 3500)&&(intval <= 5500)) {          // begin sequence of code?
+    if((intval >= 3500)&&(intval <= 5500)) {    // begin sequence of code?
         pulsecounter=0;                         // Reset counter
         ir_value=0;
         levelcounter=0;
         ir_begin=true;
+        bit = 0x00000001;
         return;
     }
 
@@ -127,64 +136,31 @@ void IRAM_ATTR isr_IR()
     if(levelcounter%2==1)return;                // only falling edge can pass
 
     if(pulsecounter==32){
+
         ir_begin=false;
-        ir_resp=(-1);
-        address=(ir_value&0xFFFF0000)>>16;
-        command=(ir_value&0x0000FFFF);
+        address= ir_value & 0xFFFF;
         if(address==0x00FF){
-            switch(command){
-                case 19125: ir_resp=0;  break; //ZERO   0x4AB5
-                case 26775: ir_resp=1;  break; //ONE    0x6897
-                case 39015: ir_resp=2;  break; //TWO    0x9867
-                case 45135: ir_resp=3;  break; //THREE  0xB04F
-                case 12495: ir_resp=4;  break; //FOUR   0x30CF
-                case 6375 : ir_resp=5;  break; //FIVE   0x18E7
-                case 31365: ir_resp=6;  break; //SIX    0x7A85
-                case 4335 : ir_resp=7;  break; //SEVEN  0x10EF
-                case 14535: ir_resp=8;  break; //EIGHT  0x38C7
-                case 23205: ir_resp=9;  break; //NINE   0x5AA5
-                case 765:   ir_resp=10; break; //OK     0x02FD
-                case 25245: ir_resp=11; break; //UP     0x629D
-                case 43095: ir_resp=12; break; //DOWN   0xA857
-                case 49725: ir_resp=13; break; //RIGHT  0xC23D
-                case 8925:  ir_resp=14; break; //LEFT   0x22DD
-                case 21165: ir_resp=15; break; //HASH   0x52AD
-                case 17085: ir_resp=16; break; //STAR   0x42BD
-                default: ir_resp=(-1);
+            command=(ir_value & 0xFFFF0000) >> 16;
+            uint8_t a, b;
+            a = (command & 0xFF00) >> 8;
+            b = (command & 0x00FF);
+            if(a + b == 0xFF){
+                ir.setIRresult(a);
             }
-
-            // switch(command){  // alternative key assignment
-            //     case 39015: ir_resp=0;  break; //ZERO   0x9867
-            //     case 41565: ir_resp=1;  break; //ONE    0xA25D
-            //     case 25245: ir_resp=2;  break; //TWO    0x629D
-            //     case 57885: ir_resp=3;  break; //THREE  0xE21D
-            //     case 8925:  ir_resp=4;  break; //FOUR   0x22DD
-            //     case 765:   ir_resp=5;  break; //FIVE   0x02FD
-            //     case 49725: ir_resp=6;  break; //SIX    0xC23D
-            //     case 57375: ir_resp=7;  break; //SEVEN  0xE01F
-            //     case 43095: ir_resp=8;  break; //EIGHT  0xA857
-            //     case 36975: ir_resp=9;  break; //NINE   0x906F
-            //     case 14535: ir_resp=10; break; //OK     0x38C7
-            //     case 6375:  ir_resp=11; break; //UP     0x18E7
-            //     case 19125: ir_resp=12; break; //DOWN   0x4AB5
-            //     case 23205: ir_resp=13; break; //RIGHT  0x5AA5
-            //     case 4335:  ir_resp=14; break; //LEFT   0x10EF
-            //     case 45135: ir_resp=15; break; //HASH   0xB04F
-            //     case 26775: ir_resp=16; break; //STAR   0x6897
-            //     default: ir_resp=(-1);
-            // }
-
-            if(ir_resp>(-1))ir.setIRresult(ir_resp);
         }
     }
-
     if((intval > 400) && (intval < 750)){       // Short pulse?
-        ir_value=(ir_value << 1) + 0;           // Shift in a "zero" bit
-        pulsecounter++;                         // Count number of received bits
+        ir_value += bit;                        // Count number of received bits
+        pulsecounter++;
+        bit <<= 1;
     }
-    if((intval > 1400) && (intval < 1900)){     // Long pulse?
-
-        ir_value=(ir_value << 1) + 1;           // Shift in a "one" bit
-        pulsecounter++;                         // Count number of received bits
+    else if((intval > 1400) && (intval < 1900)){     // Long pulse?
+        pulsecounter++;
+        bit <<= 1;
+    }
+    else{
+        pulsecounter = 0;
+        bit = 1;
     }
 }
+//----------------------------------------------------------------------------------------------------------------------------------------------------

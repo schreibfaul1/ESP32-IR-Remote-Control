@@ -9,12 +9,19 @@
 #define IR_H_
 
 #include "Arduino.h"
+#include <vector>
 extern __attribute__((weak)) void ir_res(uint32_t res);
 extern __attribute__((weak)) void ir_number(const char*);
 extern __attribute__((weak)) void ir_key(const char*);
 
 // prototypes
 void IRAM_ATTR isr_IR();
+
+struct ir_btn{
+    uint8_t val;
+    char    ch;
+};
+typedef ir_btn irBtn_t;
 
 class IR {
 
@@ -31,17 +38,16 @@ class IR {
         int8_t   tmp_resp =(-1);
 
     protected:
+        irBtn_t ir_buttons[20];
     public:
         IR(uint8_t IR_PIN);
         ~IR();
         void begin();
+        void defineButtons(irBtn_t* b);
         void setIRresult(uint8_t result);
         void loop();
 
+
 };
-
-
-
-
 
 #endif /* IR_H_ */
