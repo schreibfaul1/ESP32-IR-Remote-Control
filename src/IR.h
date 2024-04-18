@@ -32,7 +32,7 @@ class IR {
     protected:
         uint8_t m_ir_buttons[20];
     public:
-        IR(uint8_t IR_PIN);
+        IR(int8_t IR_Pin);
         ~IR();
         void begin();
         void set_irButtons(uint8_t btnNr,  uint8_t cmd);

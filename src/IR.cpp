@@ -4,7 +4,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 28.01.2024
+ *  Updated on: 18.04.2024
  */
 #include "IR.h"
 
@@ -22,8 +22,8 @@ DRAM_ATTR uint32_t ir_intval_l = 0;
 DRAM_ATTR uint32_t ir_intval_h = 0;
 DRAM_ATTR int16_t ir_pulsecounter = 0;
 
-IR::IR(uint8_t IR_PIN){
-    m_ir_pin = IR_PIN;
+IR::IR(int8_t IR_Pin){
+    m_ir_pin = IR_Pin;
     ir_adr_b = -1;
     m_t0 = 0;
     ir_cmd_b = -1;
