@@ -49,6 +49,9 @@ IR::IR(int8_t IR_Pin){
     m_ir_buttons[17] = 0x00; //
     m_ir_buttons[18] = 0x00; //
     m_ir_buttons[19] = 0x00; //
+    m_ir_buttons[20] = 0x00; //
+    m_ir_buttons[21] = 0x00; //
+    m_ir_buttons[22] = 0x00; //
 }
 
 void IR::begin(){
@@ -76,7 +79,7 @@ void IR::set_irAddress(uint8_t addr){
     ir_addressCode = addr;
 }
 
-uint8_t IR::get_irAddress(){
+int16_t IR::get_irAddress(){
     return ir_addressCode;
 }
 

@@ -30,7 +30,7 @@ class IR {
         boolean  m_f_error = false;
 
     protected:
-        uint8_t m_ir_buttons[20];
+        uint8_t m_ir_buttons[23];
     public:
         IR(int8_t IR_Pin);
         ~IR();
@@ -38,7 +38,7 @@ class IR {
         void set_irButtons(uint8_t btnNr,  uint8_t cmd);
         uint8_t* get_irButtons();
         void set_irAddress(uint8_t addr);
-        uint8_t get_irAddress();
+        int16_t get_irAddress(); // 0 ... 255 and -1 if not set
         void setIRresult(uint8_t userCode_a, uint8_t userCode_b, uint8_t dataCode_a, uint8_t dataCode_b);
         void rcCounter(uint8_t rc);
         void loop();
