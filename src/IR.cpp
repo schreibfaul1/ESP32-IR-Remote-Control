@@ -4,7 +4,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 18.04.2024
+ *  Updated on: 28.09.2024
  */
 #include "IR.h"
 
@@ -39,19 +39,26 @@ IR::IR(int8_t IR_Pin){
     m_ir_buttons[ 7] = 0x00; //
     m_ir_buttons[ 8] = 0x00; //
     m_ir_buttons[ 9] = 0x00; //
-    m_ir_buttons[10] = 0x00; //  mute
-    m_ir_buttons[11] = 0x00; //  volume+
-    m_ir_buttons[12] = 0x00; //  volume-
-    m_ir_buttons[13] = 0x00; //  previous station
-    m_ir_buttons[14] = 0x00; //  next station
-    m_ir_buttons[15] = 0x00; //
-    m_ir_buttons[16] = 0x00; //
-    m_ir_buttons[17] = 0x00; //
-    m_ir_buttons[18] = 0x00; //
-    m_ir_buttons[19] = 0x00; //
-    m_ir_buttons[20] = 0x00; //
-    m_ir_buttons[21] = 0x00; //
-    m_ir_buttons[22] = 0x00; //
+    m_ir_buttons[10] = 0x00; //  short pressed command
+    m_ir_buttons[11] = 0x00; //  short pressed command
+    m_ir_buttons[12] = 0x00; //  short pressed command
+    m_ir_buttons[13] = 0x00; //  short pressed command
+    m_ir_buttons[14] = 0x00; //  short pressed command
+    m_ir_buttons[15] = 0x00; //  short pressed command
+    m_ir_buttons[16] = 0x00; //  short pressed command
+    m_ir_buttons[17] = 0x00; //  short pressed command
+    m_ir_buttons[18] = 0x00; //  short pressed command
+    m_ir_buttons[19] = 0x00; //  short pressed command
+    m_ir_buttons[20] = 0x00; //   long pressed command
+    m_ir_buttons[21] = 0x00; //   long pressed command
+    m_ir_buttons[22] = 0x00; //   long pressed command
+    m_ir_buttons[23] = 0x00; //   long pressed command
+    m_ir_buttons[24] = 0x00; //   long pressed command
+    m_ir_buttons[25] = 0x00; //   long pressed command
+    m_ir_buttons[26] = 0x00; //   long pressed command
+    m_ir_buttons[27] = 0x00; //   long pressed command
+    m_ir_buttons[28] = 0x00; //   long pressed command
+    m_ir_buttons[29] = 0x00; //   long pressed command
 }
 
 void IR::begin(){
@@ -105,52 +112,81 @@ void IRAM_ATTR IR::error(uint32_t intval_l, uint32_t intval_h, uint8_t pulsecoun
 
 void IR::loop(){ // transform raw data from IR to ir_result
     static uint16_t number = 0;
-    static uint8_t idx = 0;
+    static uint32_t t_loop = millis();
+    static bool found_number = false;
+    static bool found_short = false;
+    static bool found_long = false;
+    static bool wait = false;
 
-    if(ir_cmd_a != -01){
-        if(ir_cmd_a + ir_cmd_b != 0xFF){
+
+    if(wait){ // waiting for repeat code
+        if(t_loop + 150 < millis()){
+            wait = false;
+        }
+        else{
             return;
         }
+    }
+
+    if(ir_cmd_a != -01){  // -001 is idle
+        t_loop = millis();
+        wait = true;
+        if(ir_cmd_a == -100){ ir_cmd_a = - 01; goto long_pressed;}  // -100 is repeat code
+        if(ir_cmd_a + ir_cmd_b != 0xFF){ ir_cmd_a = - 01; return;}
+
         if(ir_code) ir_code(ir_adr_a, ir_cmd_a);
         // log_i("ir_adr_a %i  ir_adr_b %i ir_cmd_a %i  ir_cmd_b %i", ir_adr_a, ir_adr_b, ir_cmd_a, ir_cmd_b);
         if(ir_adr_a != ir_addressCode){ir_cmd_a = -01; return;}
         m_t0 = millis();
-        bool found = false;
-        for(uint8_t i = 0; i < 20; i++){
+        for(uint8_t i = 0; i < 30; i++){
             if(ir_cmd_a == m_ir_buttons[i]){
-                found = true;
                 if(i <= 9){
-                    if(idx > 2) break;
+                    found_number = true;
                     uint8_t digit = i;
                     number *= 10;
                     number += digit;
-                    if(ir_number) ir_number(number);
-                    idx++;
                 }
-                else{ // is not a number
-                    if(ir_key) ir_key(i);
-                    // log_i("ir m_key 0x%02x", i);
-                    idx = 0;
-                    m_key = i;
+                if(i >= 10 && i <= 19){ // is not a number but short cmd
+                    found_short = true;
+                    m_short_key = i;
+                    m_t1 = millis();
                 }
-                break;
+                if(i >= 20){  // is not a number but long cmd
+                    found_long = true;
+                    m_long_key = i;
+                    m_t1 = millis();
+                }
             }
         }
-        if(!found) log_w("No function has been assigned to the code 0x%02x", ir_cmd_a);
+        if(found_number){if(ir_number) ir_number(number);}
+        if(!found_number && !found_short && !found_long){
+            log_w("No function has been assigned to the code 0x%02x", ir_cmd_a);
+            return;
+        }
         ir_cmd_a = -01;
+        goto exit;
     }
-    if(idx && (m_t0 + 2000 < millis())){
-        idx = 0;
+
+    if(found_short && m_t1 + 120 < millis()){
+        if(ir_rc < 14) if(ir_short_key) ir_short_key(m_short_key); // short pressed
+        m_short_key = -1;
+        found_short = false;
+    }
+    if(found_number && (m_t0 + 2000 < millis())){
         if(ir_res) ir_res(number);
         number = 0;
+        found_number = false;
+    }
 
-    }
-    if(m_key >= 0 && (m_t0 + 2000 < millis())){
+long_pressed:
+    if(found_long && (m_t0 + 2000 < millis())){
         if(ir_rc > 14){
-            if(ir_long_key) ir_long_key(m_key);
+            if(ir_long_key) ir_long_key(m_long_key); // long pressed
         }
-        m_key = -1;
+        m_long_key = -1;
+        found_long = false;
     }
+exit:
     if(m_f_error){
         log_d("something went wrong, intval_l %d, intval_h %d, pulsecounter %d", ir_intval_l, ir_intval_h, ir_pulsecounter);
         m_f_error = false;
@@ -266,6 +302,7 @@ void IRAM_ATTR isr_IR(){
         f_RC = false;
         RC_cnt++;
         ir.rcCounter(RC_cnt);
+        ir_cmd_a = -100;
         return;
     }
 

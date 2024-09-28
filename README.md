@@ -1,5 +1,5 @@
 # ESP32-IR-Remote-Control
-C++ class for the infrared remote control and reciever module 
+C++ class for the infrared remote control and reciever module
 
 ![Arduino IR kit](https://github.com/schreibfaul1/ESP32-IR-Remote-Control/blob/master/images/Infrarot%20IR%20Empf%C3%A4nger%20Modul%20Wireless%20Remote%20Control%20Kit%20f%C3%BCr%20Arduino.jpg)
 
@@ -12,26 +12,36 @@ C++ class for the infrared remote control and reciever module
 #define IR_PIN  4
 IR ir(IR_PIN);  // do not change the objectname, it must be "ir"
 
-    uint8_t ir_button[20] = {0x52,  // 0
-                             0x16,  // 1
-                             0x19,  // 2
-                             0x0d,  // 3
-                             0x0c,  // 4
-                             0x18,  // 5
-                             0x5e,  // 6
-                             0x08,  // 7
-                             0x1c,  // 8
-                             0x5a,  // 9
-                             0x42,  // #
-                             0x4a,  // *
-                             0x44,  // left
-                             0x43,  // right 
-                             0x46,  // up
-                             0x15,  // down
-                             0x40,  // OK 
-                             0x00, 
-                             0x00, 
-                             0x00
+    uint8_t ir_button[20] = {0x52,  // 0     (numbers)                       idx 00
+                             0x16,  // 1     (numbers)                       idx 01
+                             0x19,  // 2     (numbers)                       idx 02
+                             0x0d,  // 3     (numbers)                       idx 03
+                             0x0c,  // 4     (numbers)                       idx 04
+                             0x18,  // 5     (numbers)                       idx 05
+                             0x5e,  // 6     (numbers)                       idx 06
+                             0x08,  // 7     (numbers)                       idx 07
+                             0x1c,  // 8     (numbers)                       idx 08
+                             0x5a,  // 9     (numbers)                       idx 09
+                             0x42,  // #     (not a number, short pressed)   idx 10
+                             0x4a,  // *     (not a number, short pressed)   idx 11
+                             0x44,  // left  (not a number, short pressed)   idx 12
+                             0x43,  // right (not a number, short pressed)   idx 13
+                             0x46,  // up    (not a number, short pressed)   idx 14
+                             0x15,  // down  (not a number, short pressed)   idx 15
+                             0x40,  // OK    (not a number, short pressed)   idx 16
+                             0x00,  //       (not a number, short pressed)   idx 17
+                             0x00,  //       (not a number, short pressed)   idx 18
+                             0x00,  //       (not a number, short pressed)   idx 19
+                             0x40,  // OK    (not a number,  long pressed)   idx 20
+                             0x00,  //       (not a number,  long pressed)   idx 21
+                             0x00,  //       (not a number,  long pressed)   idx 22
+                             0x00,  //       (not a number,  long pressed)   idx 23
+                             0x00,  //       (not a number,  long pressed)   idx 24
+                             0x00,  //       (not a number,  long pressed)   idx 25
+                             0x00,  //       (not a number,  long pressed)   idx 26
+                             0x00,  //       (not a number,  long pressed)   idx 27
+                             0x00,  //       (not a number,  long pressed)   idx 28
+                             0x00,  //       (not a number,  long pressed)   idx 29
     };
 
 //--------------------------------------------------------------
@@ -62,7 +72,7 @@ void ir_number(uint16_t num){
     Serial.println(num);
 }
 
-void ir_key(uint8_t key){
+void ir_short_key(uint8_t key){
     Serial.print("ir_key: ");
     Serial.println(key);
 }
