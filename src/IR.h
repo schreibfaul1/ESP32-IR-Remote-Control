@@ -3,6 +3,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
+ *  Updated on: 24.10.2024
  */
 
 #ifndef IR_H_
@@ -32,13 +33,13 @@ class IR {
         boolean  m_f_error = false;
 
     protected:
-        uint8_t m_ir_buttons[30];
+        int16_t m_ir_buttons[30];
     public:
         IR(int8_t IR_Pin);
         ~IR();
         void begin();
         void set_irButtons(uint8_t btnNr,  uint8_t cmd);
-        uint8_t* get_irButtons();
+        int16_t* get_irButtons();
         void set_irAddress(uint8_t addr);
         int16_t get_irAddress(); // 0 ... 255 and -1 if not set
         void setIRresult(uint8_t userCode_a, uint8_t userCode_b, uint8_t dataCode_a, uint8_t dataCode_b);

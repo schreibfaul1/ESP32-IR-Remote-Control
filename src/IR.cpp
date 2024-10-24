@@ -4,7 +4,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 28.09.2024
+ *  Updated on: 24.10.2024
  */
 #include "IR.h"
 
@@ -29,36 +29,36 @@ IR::IR(int8_t IR_Pin){
     ir_cmd_b = -1;
     m_f_error = false;
 
-    m_ir_buttons[ 0] = 0x00; //
-    m_ir_buttons[ 1] = 0x00; //
-    m_ir_buttons[ 2] = 0x00; //
-    m_ir_buttons[ 3] = 0x00; //
-    m_ir_buttons[ 4] = 0x00; //
-    m_ir_buttons[ 5] = 0x00; //
-    m_ir_buttons[ 6] = 0x00; //
-    m_ir_buttons[ 7] = 0x00; //
-    m_ir_buttons[ 8] = 0x00; //
-    m_ir_buttons[ 9] = 0x00; //
-    m_ir_buttons[10] = 0x00; //  short pressed command
-    m_ir_buttons[11] = 0x00; //  short pressed command
-    m_ir_buttons[12] = 0x00; //  short pressed command
-    m_ir_buttons[13] = 0x00; //  short pressed command
-    m_ir_buttons[14] = 0x00; //  short pressed command
-    m_ir_buttons[15] = 0x00; //  short pressed command
-    m_ir_buttons[16] = 0x00; //  short pressed command
-    m_ir_buttons[17] = 0x00; //  short pressed command
-    m_ir_buttons[18] = 0x00; //  short pressed command
-    m_ir_buttons[19] = 0x00; //  short pressed command
-    m_ir_buttons[20] = 0x00; //   long pressed command
-    m_ir_buttons[21] = 0x00; //   long pressed command
-    m_ir_buttons[22] = 0x00; //   long pressed command
-    m_ir_buttons[23] = 0x00; //   long pressed command
-    m_ir_buttons[24] = 0x00; //   long pressed command
-    m_ir_buttons[25] = 0x00; //   long pressed command
-    m_ir_buttons[26] = 0x00; //   long pressed command
-    m_ir_buttons[27] = 0x00; //   long pressed command
-    m_ir_buttons[28] = 0x00; //   long pressed command
-    m_ir_buttons[29] = 0x00; //   long pressed command
+    m_ir_buttons[ 0] = 0xFFFF; // 0xFFFF -> -1 unused
+    m_ir_buttons[ 1] = 0xFFFF; //
+    m_ir_buttons[ 2] = 0xFFFF; //
+    m_ir_buttons[ 3] = 0xFFFF; //
+    m_ir_buttons[ 4] = 0xFFFF; //
+    m_ir_buttons[ 5] = 0xFFFF; //
+    m_ir_buttons[ 6] = 0xFFFF; //
+    m_ir_buttons[ 7] = 0xFFFF; //
+    m_ir_buttons[ 8] = 0xFFFF; //
+    m_ir_buttons[ 9] = 0xFFFF; //
+    m_ir_buttons[10] = 0xFFFF; //  short pressed command
+    m_ir_buttons[11] = 0xFFFF; //  short pressed command
+    m_ir_buttons[12] = 0xFFFF; //  short pressed command
+    m_ir_buttons[13] = 0xFFFF; //  short pressed command
+    m_ir_buttons[14] = 0xFFFF; //  short pressed command
+    m_ir_buttons[15] = 0xFFFF; //  short pressed command
+    m_ir_buttons[16] = 0xFFFF; //  short pressed command
+    m_ir_buttons[17] = 0xFFFF; //  short pressed command
+    m_ir_buttons[18] = 0xFFFF; //  short pressed command
+    m_ir_buttons[19] = 0xFFFF; //  short pressed command
+    m_ir_buttons[20] = 0xFFFF; //   long pressed command
+    m_ir_buttons[21] = 0xFFFF; //   long pressed command
+    m_ir_buttons[22] = 0xFFFF; //   long pressed command
+    m_ir_buttons[23] = 0xFFFF; //   long pressed command
+    m_ir_buttons[24] = 0xFFFF; //   long pressed command
+    m_ir_buttons[25] = 0xFFFF; //   long pressed command
+    m_ir_buttons[26] = 0xFFFF; //   long pressed command
+    m_ir_buttons[27] = 0xFFFF; //   long pressed command
+    m_ir_buttons[28] = 0xFFFF; //   long pressed command
+    m_ir_buttons[29] = 0xFFFF; //   long pressed command
 }
 
 void IR::begin(){
@@ -78,7 +78,7 @@ void IR::set_irButtons(uint8_t btnNr,  uint8_t cmd){
         // log_w("ButtonNumber: %i, Command: 0x%02x", btnNr, cmd);
 }
 
-uint8_t* IR::get_irButtons(){
+int16_t* IR::get_irButtons(){
     return m_ir_buttons;
 }
 
