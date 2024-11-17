@@ -4,7 +4,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 24.10.2024
+ *  Updated on: 17.11.2024
  */
 #include "IR.h"
 
@@ -49,16 +49,26 @@ IR::IR(int8_t IR_Pin){
     m_ir_buttons[17] = 0xFFFF; //  short pressed command
     m_ir_buttons[18] = 0xFFFF; //  short pressed command
     m_ir_buttons[19] = 0xFFFF; //  short pressed command
-    m_ir_buttons[20] = 0xFFFF; //   long pressed command
-    m_ir_buttons[21] = 0xFFFF; //   long pressed command
-    m_ir_buttons[22] = 0xFFFF; //   long pressed command
-    m_ir_buttons[23] = 0xFFFF; //   long pressed command
-    m_ir_buttons[24] = 0xFFFF; //   long pressed command
-    m_ir_buttons[25] = 0xFFFF; //   long pressed command
-    m_ir_buttons[26] = 0xFFFF; //   long pressed command
-    m_ir_buttons[27] = 0xFFFF; //   long pressed command
-    m_ir_buttons[28] = 0xFFFF; //   long pressed command
-    m_ir_buttons[29] = 0xFFFF; //   long pressed command
+    m_ir_buttons[20] = 0xFFFF; //  short pressed command
+    m_ir_buttons[21] = 0xFFFF; //  short pressed command
+    m_ir_buttons[22] = 0xFFFF; //  short pressed command
+    m_ir_buttons[23] = 0xFFFF; //  short pressed command
+    m_ir_buttons[24] = 0xFFFF; //  short pressed command
+    m_ir_buttons[25] = 0xFFFF; //  short pressed command
+    m_ir_buttons[26] = 0xFFFF; //  short pressed command
+    m_ir_buttons[27] = 0xFFFF; //  short pressed command
+    m_ir_buttons[28] = 0xFFFF; //  short pressed command
+    m_ir_buttons[29] = 0xFFFF; //  short pressed command
+    m_ir_buttons[30] = 0xFFFF; //   long pressed command
+    m_ir_buttons[31] = 0xFFFF; //   long pressed command
+    m_ir_buttons[32] = 0xFFFF; //   long pressed command
+    m_ir_buttons[33] = 0xFFFF; //   long pressed command
+    m_ir_buttons[34] = 0xFFFF; //   long pressed command
+    m_ir_buttons[35] = 0xFFFF; //   long pressed command
+    m_ir_buttons[36] = 0xFFFF; //   long pressed command
+    m_ir_buttons[37] = 0xFFFF; //   long pressed command
+    m_ir_buttons[38] = 0xFFFF; //   long pressed command
+    m_ir_buttons[39] = 0xFFFF; //   long pressed command
 }
 
 void IR::begin(){
@@ -130,15 +140,15 @@ void IR::loop(){ // transform raw data from IR to ir_result
 
     if(ir_cmd_a != -01){  // -001 is idle
         t_loop = millis();
+    //    log_w("ir_adr_a %i ir_cmd_a %i  ir_addressCode %i", ir_adr_a, ir_cmd_a, ir_addressCode);
         wait = true;
         if(ir_cmd_a == -100){ ir_cmd_a = - 01; goto long_pressed;}  // -100 is repeat code
         if(ir_cmd_a + ir_cmd_b != 0xFF){ ir_cmd_a = - 01; return;}
 
         if(ir_code) ir_code(ir_adr_a, ir_cmd_a);
-        // log_i("ir_adr_a %i  ir_adr_b %i ir_cmd_a %i  ir_cmd_b %i", ir_adr_a, ir_adr_b, ir_cmd_a, ir_cmd_b);
         if(ir_adr_a != ir_addressCode){ir_cmd_a = -01; return;}
         m_t0 = millis();
-        for(uint8_t i = 0; i < 30; i++){
+        for(uint8_t i = 0; i < 40; i++){
             if(ir_cmd_a == m_ir_buttons[i]){
                 if(i <= 9){
                     found_number = true;
@@ -146,12 +156,12 @@ void IR::loop(){ // transform raw data from IR to ir_result
                     number *= 10;
                     number += digit;
                 }
-                if(i >= 10 && i <= 19){ // is not a number but short cmd
+                if(i >= 10 && i <= 29){ // is not a number but short cmd
                     found_short = true;
                     m_short_key = i;
                     m_t1 = millis();
                 }
-                if(i >= 20){  // is not a number but long cmd
+                if(i >= 30){  // is not a number but long cmd
                     found_long = true;
                     m_long_key = i;
                     m_t1 = millis();
@@ -218,9 +228,9 @@ void IRAM_ATTR isr_IR(){
     static boolean f_LP = 0;                           // LP pulse 4500µs (positive)
     static boolean f_BURST  = 0;                       // BURST pulse 562.5µs (negative)
     static boolean f_P = 0;                            // SPACE pulse 2250µs (positive), in repeat code
-    static boolean f_RC = false;                       // repeat code sequence received
     static uint8_t RC_cnt = 0;                         // repeat code counter
 
+    (void)RC_cnt;
     t1 = micros();                                      // Get current time
     if(!digitalRead(g_ir_pin)) intval_h = t1 - t0;      // Compute interval, only high
     else                       intval_l = t1 - t0;      // Compute interval, only low
@@ -285,7 +295,6 @@ void IRAM_ATTR isr_IR(){
         // else fall through
     }
 
-
     if(f_AGC){  // repeat code
         if((intval_h > 1700) && (intval_h < 2800)){ // repeat code 2250µs
             f_P = true;
@@ -294,18 +303,13 @@ void IRAM_ATTR isr_IR(){
        if(f_P){
             if((intval_l > 400) && (intval_l < 750)){
                 f_AGC = false;
-                f_RC = true;
+                RC_cnt++;
+                ir.rcCounter(RC_cnt);
+                ir_cmd_a = -100;
+                return;
             }
        }
     }
-    if(f_RC){
-        f_RC = false;
-        RC_cnt++;
-        ir.rcCounter(RC_cnt);
-        ir_cmd_a = -100;
-        return;
-    }
-
     if(intval_l) ir.error( intval_l, intval_h, pulsecounter);
 }
 //------------------------------------------------------------------------------------------------------------------
