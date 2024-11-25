@@ -4,23 +4,22 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 17.11.2024
+ *  Updated on: 25.11.2024
  */
 #include "IR.h"
 
 
 // global var
-DRAM_ATTR int16_t ir_cmd_a = -1; // set from isr
-DRAM_ATTR int16_t ir_cmd_b = -1; // set from isr
-DRAM_ATTR int16_t ir_adr_a = 0;  // set from isr
-DRAM_ATTR int16_t ir_adr_b = 0;  // set from isr
-DRAM_ATTR uint8_t ir_rc = 0;
-DRAM_ATTR uint8_t ir_addressCode;
-DRAM_ATTR uint8_t g_ir_pin;
-
-DRAM_ATTR uint32_t ir_intval_l = 0;
-DRAM_ATTR uint32_t ir_intval_h = 0;
-DRAM_ATTR int16_t ir_pulsecounter = 0;
+volatile int16_t ir_cmd_a = -1; // set from isr
+volatile int16_t ir_cmd_b = -1; // set from isr
+volatile int16_t ir_adr_a = 0;  // set from isr
+volatile int16_t ir_adr_b = 0;  // set from isr
+volatile uint8_t ir_rc = 0;
+volatile uint8_t ir_addressCode;
+volatile uint8_t g_ir_pin;
+volatile uint32_t ir_intval_l = 0;
+volatile uint32_t ir_intval_h = 0;
+volatile int16_t ir_pulsecounter = 0;
 
 IR::IR(int8_t IR_Pin){
     m_ir_pin = IR_Pin;
