@@ -4,7 +4,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 25.11.2024
+ *  Updated on: 05.01.2025
  */
 #include "IR.h"
 
@@ -127,7 +127,6 @@ void IR::loop(){ // transform raw data from IR to ir_result
     static bool found_long = false;
     static bool wait = false;
 
-
     if(wait){ // waiting for repeat code
         if(t_loop + 150 < millis()){
             wait = false;
@@ -155,13 +154,10 @@ void IR::loop(){ // transform raw data from IR to ir_result
                     number *= 10;
                     number += digit;
                 }
-                if(i >= 10 && i <= 29){ // is not a number but short cmd
+                if(i >= 10 && i <= 42){ // is not a number but a cmd
                     found_short = true;
-                    m_short_key = i;
-                    m_t1 = millis();
-                }
-                if(i >= 30){  // is not a number but long cmd
                     found_long = true;
+                    m_short_key = i;
                     m_long_key = i;
                     m_t1 = millis();
                 }
@@ -177,7 +173,7 @@ void IR::loop(){ // transform raw data from IR to ir_result
     }
 
     if(found_short && m_t1 + 120 < millis()){
-        if(ir_rc < 14) if(ir_short_key) ir_short_key(m_short_key); // short pressed
+        if(ir_rc < 8) if(ir_short_key) ir_short_key(m_short_key); // short pressed
         m_short_key = -1;
         found_short = false;
     }
@@ -188,8 +184,8 @@ void IR::loop(){ // transform raw data from IR to ir_result
     }
 
 long_pressed:
-    if(found_long && (m_t0 + 2000 < millis())){
-        if(ir_rc > 14){
+    if(found_long && (m_t0 + 1200 < millis())){
+        if(ir_rc > 8){
             if(ir_long_key) ir_long_key(m_long_key); // long pressed
         }
         m_long_key = -1;
@@ -249,6 +245,7 @@ void IRAM_ATTR isr_IR(){
             ir_value = 0;
             bit = 0x00000001;
             RC_cnt = 0;
+            ir.rcCounter(RC_cnt);
             return;
         }
         // else fall through

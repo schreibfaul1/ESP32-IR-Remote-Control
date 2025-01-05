@@ -3,7 +3,7 @@
  *
  *  Created on: 11.08.2017
  *      Author: Wolle
- *  Updated on: 27.11.2024
+ *  Updated on: 05.01.2025
  */
 
 #ifndef IR_H_
@@ -33,7 +33,7 @@ class IR {
         boolean  m_f_error = false;
 
     protected:
-        int16_t m_ir_buttons[40];
+        int16_t m_ir_buttons[50];
     public:
         IR(int8_t IR_Pin);
         ~IR();
